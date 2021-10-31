@@ -3,9 +3,8 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\OrderItemResource;
 
-class OrderResource extends JsonResource
+class UserResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,10 +16,12 @@ class OrderResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
+            'first_name' => $this->first_name,
+            'last_name' => $this->last_name,
             'email' => $this->email,
-            'total' => $this->admin_revenue,
-            'order_items' => OrderItemResource::collection($this->whenLoaded('OrderItems')),
+            $this->mergeWhen($request->path() === 'api/ambassador/user', [
+                'revenue' => $this->revenue,
+            ])
         ];
     }
 }

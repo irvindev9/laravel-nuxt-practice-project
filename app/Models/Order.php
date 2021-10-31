@@ -43,10 +43,33 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereTransactionId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereZip($value)
+ * @property-read mixed $name
+ * @property-read mixed $admin_revenue
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\OrderItem[] $orderItems
+ * @property-read int|null $order_items_count
+ * @property-read mixed $ambassador_revenue
  */
 class Order extends Model
 {
     use HasFactory;
 
     protected $guarded = [];
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function getNameAttribute()
+    {
+        return $this->first_name . ' ' . $this->last_name;
+    }
+
+    public function getAdminRevenueAttribute(){
+        return $this->orderItems->sum(fn(OrderItem $item) => $item->admin_revenue);
+    }
+
+    public function getAmbassadorRevenueAttribute(){
+        return $this->orderItems->sum(fn(OrderItem $item) => $item->ambassador_revenue);
+    }
 }

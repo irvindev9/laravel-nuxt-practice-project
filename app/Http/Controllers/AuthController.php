@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateInfoRequest;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Models\User;
 use Symfony\Component\HttpFoundation\Response;
+use App\Http\Resources\UserResource;
 
 class AuthController extends Controller
 {
@@ -19,7 +20,7 @@ class AuthController extends Controller
             "email",
         ) + [
             "password" => \Hash::make($request->input("password")),
-            "is_admin" => 1
+            "is_admin" => $request->path() === "api/admin/register" ? 1 : 0,
         ]);
 
         return response($user, Response::HTTP_CREATED);
@@ -34,7 +35,17 @@ class AuthController extends Controller
 
         $user = \Auth::user();
 
-        $jwt = $user->createToken("token", ["admin"])->plainTextToken;
+        $adminLogin = $request->path() === "api/admin/login";
+
+        if ($adminLogin && !$user->is_admin) {
+            return response([
+                "error" => "Access Denied!"
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $scopes = $adminLogin ? "admin" : "ambassador";
+
+        $jwt = $user->createToken("token", [$scopes])->plainTextToken;
 
         $cookie = cookie("jwt", $jwt, 60*24); // 1 Day
 
@@ -44,7 +55,7 @@ class AuthController extends Controller
     }
 
     public function user(Request $request){
-        return $request->user();
+        return new UserResource($request->user());
     }
 
     public function logout(){
