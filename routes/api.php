@@ -73,3 +73,8 @@ Route::prefix("ambassador")->group(function(){
 
 
 //Checkout
+Route::prefix("checkout")->group(function(){
+    Route::get("links/{code}", [LinkController::class, "show"]);
+    Route::post("orders", [OrderController::class, "store"]);
+    Route::post("orders/confirm", [OrderController::class, "confirm"]);
+});

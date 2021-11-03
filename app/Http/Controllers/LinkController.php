@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\LinkResource;
 use Illuminate\Http\Request;
 use App\Models\Link;
 use App\Models\LinkProduct;
@@ -10,7 +11,9 @@ use Str;
 class LinkController extends Controller
 {
     public function index($id){
-        return Link::where("user_id", $id)->get();
+        $link = Link::with('orders')->where("user_id", $id)->get();
+
+        return LinkResource::collection($link);
     }
 
     public function store(Request $request){
@@ -27,5 +30,9 @@ class LinkController extends Controller
         }
 
         return $link;
+    }
+
+    public function show($code){
+        return Link::with('user', 'products')->where('code', $code)->first();
     }
 }
